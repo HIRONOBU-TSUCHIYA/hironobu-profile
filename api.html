@@ -1,0 +1,1251 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="スマートフォンからトラックの日常点検を記録・報告するアプリです。">
+  <meta name="theme-color" content="#f4f6f3">
+  <title>トラック日常点検 | Hironobu Tsuchiya</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --background: #f4f6f3;
+      --surface: #fff;
+      --ink: #202923;
+      --muted: #66716a;
+      --line: #d9dfd9;
+      --accent: #426e58;
+      --accent-dark: #315541;
+      --accent-soft: #e9f1eb;
+      --danger: #a23d32;
+      --danger-soft: #fbefed;
+      font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+      color: var(--ink);
+      background: var(--background);
+      line-height: 1.65;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button,
+    input,
+    textarea,
+    select,
+    summary {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible,
+    summary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .topbar {
+      position: sticky;
+      z-index: 3;
+      top: 0;
+      display: flex;
+      min-height: 64px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px max(20px, calc((100% - 1080px) / 2));
+      border-bottom: 1px solid var(--line);
+      background: rgb(255 255 255 / 94%);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 9px;
+      background: var(--accent);
+      color: white;
+      font-size: 18px;
+    }
+
+    .topbar__right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .storage-label {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .back-link {
+      color: var(--muted);
+      font-size: 12px;
+      text-decoration: none;
+    }
+
+    main {
+      width: min(100% - 32px, 960px);
+      margin: 0 auto;
+      padding: 34px 0 64px;
+    }
+
+    .page-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 21px;
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: 0.15em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(25px, 4vw, 33px);
+      font-weight: 700;
+      letter-spacing: 0.015em;
+      line-height: 1.4;
+    }
+
+    .page-description {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin: 0 0 19px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #e9ede9;
+    }
+
+    .tab {
+      flex: 1;
+      min-height: 42px;
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .tab[aria-selected="true"] {
+      background: var(--surface);
+      box-shadow: 0 1px 3px rgb(20 35 25 / 10%);
+      color: var(--ink);
+    }
+
+    .notice {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin: 0 0 17px;
+      padding: 12px 14px;
+      border: 1px solid #d6e2d8;
+      border-radius: 7px;
+      background: var(--accent-soft);
+      color: #3d5946;
+      font-size: 12px;
+    }
+
+    .notice p {
+      margin: 0;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      box-shadow: 0 2px 9px rgb(20 35 25 / 3%);
+    }
+
+    .form-card {
+      padding: clamp(16px, 3.5vw, 28px);
+    }
+
+    .form-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 13px;
+      margin-bottom: 23px;
+    }
+
+    .field-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .required {
+      margin-left: 4px;
+      color: var(--danger);
+      font-size: 10px;
+    }
+
+    .text-field,
+    .select-field {
+      width: 100%;
+      min-height: 44px;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: white;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .group {
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .group + .group {
+      margin-top: 24px;
+    }
+
+    .group-heading {
+      display: flex;
+      align-items: baseline;
+      gap: 9px;
+      margin: 0 0 10px;
+      padding: 0 0 8px;
+      border-bottom: 1px solid var(--line);
+      font-size: 16px;
+      font-weight: 750;
+    }
+
+    .group-number {
+      color: var(--accent);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+    }
+
+    .item {
+      padding: 14px 0;
+      border-bottom: 1px solid #edf0ed;
+    }
+
+    .item:last-child {
+      border-bottom: 0;
+    }
+
+    .item-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .item-name {
+      display: block;
+      margin: 0;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .item-hint {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .choices {
+      display: flex;
+      gap: 6px;
+    }
+
+    .choice {
+      position: relative;
+    }
+
+    .choice input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+
+    .choice span {
+      display: inline-flex;
+      min-width: 76px;
+      min-height: 38px;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: white;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+    }
+
+    .choice input:focus-visible + span {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .choice input[value="yes"]:checked + span {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+    }
+
+    .choice input[value="no"]:checked + span {
+      border-color: var(--danger);
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .issue-fields {
+      display: none;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
+      margin: 11px 0 0;
+      padding: 12px;
+      border-radius: 7px;
+      background: #f8f9f7;
+    }
+
+    .item.has-issue .issue-fields {
+      display: grid;
+    }
+
+    .comment-field {
+      min-height: 68px;
+      resize: vertical;
+    }
+
+    .photo-field {
+      width: 100%;
+      min-height: 42px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: white;
+      font-size: 11px;
+    }
+
+    .photo-preview {
+      display: none;
+      width: 100%;
+      max-height: 160px;
+      grid-column: 1 / -1;
+      border-radius: 6px;
+      object-fit: contain;
+      background: white;
+    }
+
+    .photo-preview.is-visible {
+      display: block;
+    }
+
+    .form-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .form-progress {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .button {
+      display: inline-flex;
+      min-height: 43px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 16px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: white;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .button:hover {
+      border-color: var(--accent);
+    }
+
+    .button--primary {
+      min-width: 168px;
+      border-color: var(--accent);
+      background: var(--accent);
+      color: white;
+    }
+
+    .button--primary:hover {
+      border-color: var(--accent-dark);
+      background: var(--accent-dark);
+    }
+
+    .button--small {
+      min-height: 34px;
+      padding: 6px 10px;
+      font-size: 11px;
+    }
+
+    .message {
+      min-height: 22px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .message.is-error {
+      color: var(--danger);
+    }
+
+    .admin-panel[hidden],
+    .form-panel[hidden] {
+      display: none;
+    }
+
+    .admin-tools {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 13px;
+    }
+
+    .filter-select {
+      width: auto;
+      min-width: 155px;
+      min-height: 39px;
+      font-size: 12px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 11px;
+      margin-bottom: 15px;
+    }
+
+    .summary-card {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+    }
+
+    .summary-label {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .summary-value {
+      display: block;
+      margin-top: 2px;
+      font-size: 23px;
+      font-weight: 750;
+    }
+
+    .summary-card--alert .summary-value {
+      color: var(--danger);
+    }
+
+    .records {
+      display: grid;
+      gap: 11px;
+    }
+
+    .record {
+      overflow: hidden;
+    }
+
+    .record-summary {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px 16px;
+      align-items: center;
+      padding: 15px 17px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .record-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .record-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .record-subtitle {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .record-side {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      min-height: 25px;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+      font-size: 10px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .badge--alert {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .record-details {
+      padding: 0 17px 17px;
+      border-top: 1px solid #edf0ed;
+    }
+
+    .record-comment {
+      margin: 13px 0;
+      padding: 10px 12px;
+      border-radius: 6px;
+      background: #f7f8f6;
+      font-size: 12px;
+      white-space: pre-wrap;
+    }
+
+    .record-issues {
+      display: grid;
+      gap: 12px;
+      margin-top: 13px;
+    }
+
+    .record-issue {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(110px, 200px);
+      gap: 14px;
+      align-items: start;
+      padding-top: 12px;
+      border-top: 1px solid #edf0ed;
+    }
+
+    .record-issue p {
+      margin: 0;
+      font-size: 12px;
+    }
+
+    .record-issue__group {
+      margin-bottom: 3px !important;
+      color: var(--muted);
+      font-size: 10px !important;
+    }
+
+    .record-photo {
+      width: 100%;
+      max-height: 150px;
+      border-radius: 6px;
+      object-fit: cover;
+    }
+
+    .empty-state {
+      padding: 39px 20px;
+      border: 1px dashed #c7d0c8;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .privacy-note {
+      margin: 18px 2px 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.75;
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        min-height: 58px;
+        padding-right: 16px;
+        padding-left: 16px;
+      }
+
+      .storage-label {
+        display: none;
+      }
+
+      main {
+        width: min(100% - 24px, 960px);
+        padding-top: 25px;
+      }
+
+      .page-heading {
+        align-items: flex-start;
+      }
+
+      .form-meta {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .form-meta > :first-child {
+        grid-column: 1 / -1;
+      }
+
+      .item-main {
+        grid-template-columns: 1fr;
+        gap: 9px;
+      }
+
+      .choices {
+        width: 100%;
+      }
+
+      .choice {
+        flex: 1;
+      }
+
+      .choice span {
+        width: 100%;
+        min-height: 40px;
+      }
+
+      .issue-fields {
+        grid-template-columns: 1fr;
+      }
+
+      .photo-preview {
+        grid-column: auto;
+      }
+
+      .summary {
+        gap: 7px;
+      }
+
+      .summary-card {
+        padding: 10px;
+      }
+
+      .summary-value {
+        font-size: 20px;
+      }
+
+      .admin-tools {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .filter-select {
+        width: 100%;
+      }
+
+      .record-issue {
+        grid-template-columns: 1fr;
+      }
+
+      .record-photo {
+        max-width: 260px;
+      }
+
+      .form-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .button--primary {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">✓</span>
+      <span>トラック日常点検</span>
+    </a>
+    <div class="topbar__right">
+      <span class="storage-label">端末内保存の試作版</span>
+      <a class="back-link" href="index.html">プロフィールへ</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">DAILY VEHICLE INSPECTION</p>
+        <h1>点検・報告</h1>
+        <p class="page-description">出発前に車両の状態を確認し、結果を記録してください。</p>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="アプリ画面">
+      <button class="tab" id="driver-tab" type="button" role="tab" aria-selected="true" aria-controls="driver-panel">点検入力</button>
+      <button class="tab" id="admin-tab" type="button" role="tab" aria-selected="false" aria-controls="admin-panel">管理者画面</button>
+    </div>
+
+    <div class="notice">
+      <span aria-hidden="true">ℹ</span>
+      <p><strong>試作版：</strong>点検記録と写真はこのブラウザがある端末内に保存されます。複数のスマートフォンや管理者間で共有するクラウド保存には、別途サーバーと利用者認証の設定が必要です。</p>
+    </div>
+
+    <section class="form-panel" id="driver-panel" role="tabpanel" aria-labelledby="driver-tab">
+      <form class="card form-card" id="inspection-form">
+        <div class="form-meta">
+          <div>
+            <label class="field-label" for="inspection-date">点検日時</label>
+            <input class="text-field" id="inspection-date" name="date" type="datetime-local" required>
+          </div>
+          <div>
+            <label class="field-label" for="vehicle">車両番号<span class="required">必須</span></label>
+            <input class="text-field" id="vehicle" name="vehicle" type="text" maxlength="40" placeholder="例：埼玉 100 あ 1234" required>
+          </div>
+          <div>
+            <label class="field-label" for="driver">運転者<span class="required">必須</span></label>
+            <input class="text-field" id="driver" name="driver" type="text" maxlength="40" placeholder="氏名" required>
+          </div>
+        </div>
+
+        <div id="inspection-groups"></div>
+
+        <div class="form-actions">
+          <span class="form-progress" id="form-progress" aria-live="polite">0 / 12 項目を確認</span>
+          <button class="button button--primary" type="submit">点検結果を報告する</button>
+        </div>
+        <p class="message" id="form-message" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="admin-panel" id="admin-panel" role="tabpanel" aria-labelledby="admin-tab" hidden>
+      <div class="summary" aria-label="点検記録の概要">
+        <div class="summary-card">
+          <span class="summary-label">点検記録</span>
+          <span class="summary-value" id="total-count">0</span>
+        </div>
+        <div class="summary-card summary-card--alert">
+          <span class="summary-label">要確認の記録</span>
+          <span class="summary-value" id="alert-count">0</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-label">本日の点検</span>
+          <span class="summary-value" id="today-count">0</span>
+        </div>
+      </div>
+      <div class="admin-tools">
+        <label class="field-label" for="record-filter">点検記録一覧</label>
+        <select class="select-field filter-select" id="record-filter" aria-label="点検記録の絞り込み">
+          <option value="all">すべての記録</option>
+          <option value="issues">要確認のみ</option>
+        </select>
+      </div>
+      <div class="records" id="records" aria-live="polite"></div>
+      <p class="message" id="admin-message" role="status" aria-live="polite"></p>
+    </section>
+
+    <p class="privacy-note">点検結果は車両の安全確認を補助する記録です。異常を確認した場合は、写真とコメントを添えて報告し、社内の安全管理手順に従ってください。</p>
+  </main>
+
+  <script>
+    const inspectionGroups = [
+      {
+        name: "ブレーキ",
+        items: [
+          { name: "ブレーキペダル", hint: "踏みしろは適正か、踏み込んだ感触に異常はないか。" },
+          { name: "ブレーキ液", hint: "リザーバータンクの液量は規定範囲内か。" },
+          { name: "駐車ブレーキ", hint: "レバーの引きしろに違和感や空打ち感はないか。" },
+          { name: "エアブレーキ", hint: "空気圧力の上がり具合、ブレーキバルブの排気音に異常はないか。" }
+        ]
+      },
+      {
+        name: "タイヤ",
+        items: [
+          { name: "空気圧", hint: "エアゲージで測定し、規定値を下回っていないか。" },
+          { name: "溝・摩耗", hint: "スリップサインが出ていないか。必要な溝の深さがあるか。" },
+          { name: "タイヤ外観", hint: "側面の亀裂・膨らみ、釘などの異物がないか。" },
+          { name: "ホイールナット", hint: "緩みや、ナット周辺にサビ汁の痕跡がないか。" }
+        ]
+      },
+      {
+        name: "原動機（エンジン）まわり",
+        items: [
+          { name: "エンジンオイル", hint: "オイルレベルゲージで量と汚れを確認したか。" },
+          { name: "冷却水（クーラント）", hint: "リザーバータンク内の量は適正範囲内か。" },
+          { name: "ファンベルト", hint: "張り具合に異常はなく、亀裂や摩耗がないか。" },
+          { name: "バッテリー", hint: "液面は規定範囲内か。端子に腐食がないか。" }
+        ]
+      }
+    ];
+
+    const databaseName = "truck-daily-inspection";
+    const databaseVersion = 1;
+    const recordStoreName = "records";
+    const groupContainer = document.querySelector("#inspection-groups");
+    const form = document.querySelector("#inspection-form");
+    const formMessage = document.querySelector("#form-message");
+    const progress = document.querySelector("#form-progress");
+    const recordsContainer = document.querySelector("#records");
+    const objectUrls = new Set();
+
+    function makeElement(tagName, className, text) {
+      const element = document.createElement(tagName);
+      if (className) element.className = className;
+      if (text !== undefined) element.textContent = text;
+      return element;
+    }
+
+    function renderInspectionForm() {
+      inspectionGroups.forEach((group, groupIndex) => {
+        const fieldset = makeElement("fieldset", "group");
+        const heading = makeElement("legend", "group-heading");
+        heading.append(
+          makeElement("span", "group-number", `0${groupIndex + 1}`),
+          makeElement("span", "", group.name)
+        );
+        fieldset.append(heading);
+
+        group.items.forEach((item, itemIndex) => {
+          const itemId = `check-${groupIndex}-${itemIndex}`;
+          const itemElement = makeElement("div", "item");
+          itemElement.dataset.group = group.name;
+          itemElement.dataset.item = item.name;
+
+          const main = makeElement("div", "item-main");
+          const text = makeElement("div");
+          text.append(
+            makeElement("span", "item-name", item.name),
+            makeElement("span", "item-hint", item.hint)
+          );
+
+          const choices = makeElement("div", "choices");
+          choices.setAttribute("role", "radiogroup");
+          choices.setAttribute("aria-label", `${group.name}：${item.name}`);
+          [
+            { value: "yes", label: "異常なし" },
+            { value: "no", label: "異常あり" }
+          ].forEach(({ value, label }) => {
+            const choice = makeElement("label", "choice");
+            const input = document.createElement("input");
+            input.type = "radio";
+            input.name = itemId;
+            input.value = value;
+            input.required = true;
+            input.setAttribute("aria-label", `${label}（${value.toUpperCase()}）`);
+            const caption = makeElement("span", "", `${label}（${value.toUpperCase()}）`);
+            choice.append(input, caption);
+            choices.append(choice);
+            input.addEventListener("change", () => {
+              itemElement.classList.toggle("has-issue", value === "no" && input.checked);
+              updateProgress();
+            });
+          });
+
+          const issueFields = makeElement("div", "issue-fields");
+          const commentLabel = makeElement("label", "field-label", "コメント（任意）");
+          const comment = document.createElement("textarea");
+          comment.className = "text-field comment-field";
+          comment.name = `${itemId}-comment`;
+          comment.maxLength = 500;
+          comment.placeholder = "異常の内容・位置など";
+          commentLabel.append(comment);
+
+          const photoLabel = makeElement("label", "field-label", "写真（異常時は必須）");
+          const photoInput = document.createElement("input");
+          photoInput.className = "photo-field";
+          photoInput.type = "file";
+          photoInput.name = `${itemId}-photo`;
+          photoInput.accept = "image/*";
+          photoInput.setAttribute("capture", "environment");
+          photoInput.required = false;
+          photoLabel.append(photoInput);
+
+          const photoPreview = document.createElement("img");
+          photoPreview.className = "photo-preview";
+          photoPreview.alt = `${item.name}の異常写真プレビュー`;
+          photoInput.addEventListener("change", () => {
+            const file = photoInput.files[0];
+            if (photoPreview.src.startsWith("blob:")) URL.revokeObjectURL(photoPreview.src);
+            if (!file) {
+              photoPreview.removeAttribute("src");
+              photoPreview.classList.remove("is-visible");
+              return;
+            }
+            if (!file.type.startsWith("image/")) {
+              photoInput.value = "";
+              setFormMessage("写真には画像ファイルを選択してください。", true);
+              return;
+            }
+            if (file.size > 12 * 1024 * 1024) {
+              photoInput.value = "";
+              setFormMessage("写真は1枚12 MB以下にしてください。", true);
+              return;
+            }
+            photoPreview.src = URL.createObjectURL(file);
+            photoPreview.classList.add("is-visible");
+          });
+
+          issueFields.append(commentLabel, photoLabel, photoPreview);
+          main.append(text, choices);
+          itemElement.append(main, issueFields);
+          fieldset.append(itemElement);
+        });
+
+        groupContainer.append(fieldset);
+      });
+    }
+
+    function setFormMessage(message, isError = false) {
+      formMessage.textContent = message;
+      formMessage.classList.toggle("is-error", isError);
+    }
+
+    function updateProgress() {
+      const checked = form.querySelectorAll('.item input[type="radio"]:checked[value="yes"], .item input[type="radio"]:checked[value="no"]').length / 2;
+      const total = inspectionGroups.reduce((sum, group) => sum + group.items.length, 0);
+      progress.textContent = `${checked} / ${total} 項目を確認`;
+    }
+
+    function openDatabase() {
+      return new Promise((resolve, reject) => {
+        if (!("indexedDB" in window)) {
+          reject(new Error("このブラウザは端末内保存に対応していません。"));
+          return;
+        }
+        const request = indexedDB.open(databaseName, databaseVersion);
+        request.addEventListener("upgradeneeded", () => {
+          const database = request.result;
+          if (!database.objectStoreNames.contains(recordStoreName)) {
+            database.createObjectStore(recordStoreName, { keyPath: "id" });
+          }
+        });
+        request.addEventListener("success", () => resolve(request.result));
+        request.addEventListener("error", () => reject(request.error || new Error("保存領域を開けませんでした。")));
+      });
+    }
+
+    async function withStore(mode, action) {
+      const database = await openDatabase();
+      return new Promise((resolve, reject) => {
+        const transaction = database.transaction(recordStoreName, mode);
+        const store = transaction.objectStore(recordStoreName);
+        let request;
+        try {
+          request = action(store);
+        } catch (error) {
+          database.close();
+          reject(error);
+          return;
+        }
+        transaction.addEventListener("complete", () => {
+          resolve(request ? request.result : undefined);
+          database.close();
+        });
+        transaction.addEventListener("error", () => {
+          reject(transaction.error || new Error("データを保存できませんでした。"));
+          database.close();
+        });
+        transaction.addEventListener("abort", () => {
+          reject(transaction.error || new Error("データの保存が中断されました。"));
+          database.close();
+        });
+      });
+    }
+
+    function getAllRecords() {
+      return withStore("readonly", (store) => store.getAll());
+    }
+
+    function saveRecord(record) {
+      return withStore("readwrite", (store) => store.add(record));
+    }
+
+    function toLocalDateTime(date) {
+      const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+      return local.toISOString().slice(0, 16);
+    }
+
+    function resetInspectionForm() {
+      form.reset();
+      document.querySelector("#inspection-date").value = toLocalDateTime(new Date());
+      document.querySelectorAll(".item").forEach((item) => {
+        item.classList.remove("has-issue");
+        const preview = item.querySelector(".photo-preview");
+        if (preview.src.startsWith("blob:")) URL.revokeObjectURL(preview.src);
+        preview.removeAttribute("src");
+        preview.classList.remove("is-visible");
+      });
+      updateProgress();
+    }
+
+    function getIssues(record) {
+      return record.items.filter((item) => item.result === "no");
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setFormMessage("");
+      if (!form.reportValidity()) return;
+
+      const checkedItems = [...form.querySelectorAll(".item")];
+      const items = [];
+      for (const element of checkedItems) {
+        const selected = element.querySelector('input[type="radio"]:checked');
+        const result = selected.value;
+        const comment = element.querySelector(".comment-field").value.trim();
+        const photoInput = element.querySelector(".photo-field");
+        const photo = photoInput.files[0] || null;
+        if (result === "no" && !photo) {
+          setFormMessage(`「${element.dataset.item}」の写真を追加してください。`, true);
+          photoInput.focus();
+          return;
+        }
+        items.push({
+          group: element.dataset.group,
+          name: element.dataset.item,
+          result,
+          comment,
+          photo: result === "no" ? photo : null
+        });
+      }
+
+      const dateValue = document.querySelector("#inspection-date").value;
+      const record = {
+        id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        date: new Date(dateValue).toISOString(),
+        vehicle: document.querySelector("#vehicle").value.trim(),
+        driver: document.querySelector("#driver").value.trim(),
+        items
+      };
+
+      const submitButton = form.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      submitButton.textContent = "保存しています…";
+      try {
+        await saveRecord(record);
+        resetInspectionForm();
+        setFormMessage("点検結果を端末に保存しました。");
+      } catch (error) {
+        setFormMessage(error instanceof Error ? error.message : "点検結果を保存できませんでした。", true);
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "点検結果を報告する";
+      }
+    });
+
+    function formatDate(value) {
+      return new Intl.DateTimeFormat("ja-JP", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(new Date(value));
+    }
+
+    function createObjectUrl(blob) {
+      const url = URL.createObjectURL(blob);
+      objectUrls.add(url);
+      return url;
+    }
+
+    function renderRecord(record) {
+      const issues = getIssues(record);
+      const details = document.createElement("details");
+      details.className = "record card";
+
+      const summary = document.createElement("summary");
+      summary.className = "record-summary";
+      const main = document.createElement("div");
+      main.append(
+        makeElement("p", "record-title", `${record.vehicle}　${record.driver}`),
+        makeElement("p", "record-subtitle", formatDate(record.date))
+      );
+      const side = makeElement("div", "record-side");
+      const badge = makeElement("span", `badge${issues.length ? " badge--alert" : ""}`, issues.length ? `要確認 ${issues.length}件` : "異常なし");
+      side.append(badge);
+      summary.append(main, side);
+
+      const detailContent = makeElement("div", "record-details");
+      const issueList = makeElement("div", "record-issues");
+      if (issues.length === 0) {
+        issueList.append(makeElement("p", "record-comment", "すべての点検項目で異常なし。"));
+      } else {
+        issues.forEach((item) => {
+          const issue = makeElement("article", "record-issue");
+          const info = document.createElement("div");
+          info.append(
+            makeElement("p", "record-issue__group", item.group),
+            makeElement("p", "", item.name)
+          );
+          if (item.comment) info.append(makeElement("p", "record-comment", item.comment));
+          if (item.photo) {
+            const image = document.createElement("img");
+            image.className = "record-photo";
+            image.alt = `${item.name}の異常写真`;
+            image.loading = "lazy";
+            image.src = createObjectUrl(item.photo);
+            issue.append(info, image);
+          } else {
+            issue.append(info);
+          }
+          issueList.append(issue);
+        });
+      }
+      detailContent.append(issueList);
+      details.append(summary, detailContent);
+      return details;
+    }
+
+    async function renderAdmin() {
+      recordsContainer.replaceChildren();
+      objectUrls.forEach((url) => URL.revokeObjectURL(url));
+      objectUrls.clear();
+      try {
+        const records = await getAllRecords();
+        records.sort((left, right) => new Date(right.date) - new Date(left.date));
+        const issueRecords = records.filter((record) => getIssues(record).length);
+        const today = new Date().toLocaleDateString("sv-SE");
+        const todayRecords = records.filter((record) => new Date(record.date).toLocaleDateString("sv-SE") === today);
+        document.querySelector("#total-count").textContent = String(records.length);
+        document.querySelector("#alert-count").textContent = String(issueRecords.length);
+        document.querySelector("#today-count").textContent = String(todayRecords.length);
+
+        const showIssuesOnly = document.querySelector("#record-filter").value === "issues";
+        const visibleRecords = showIssuesOnly ? issueRecords : records;
+        if (!visibleRecords.length) {
+          recordsContainer.append(makeElement("div", "empty-state",
+            showIssuesOnly ? "要確認の点検記録はありません。" : "点検記録はまだありません。点検入力から報告してください。"));
+          return;
+        }
+        visibleRecords.forEach((record) => recordsContainer.append(renderRecord(record)));
+      } catch (error) {
+        document.querySelector("#total-count").textContent = "—";
+        document.querySelector("#alert-count").textContent = "—";
+        document.querySelector("#today-count").textContent = "—";
+        recordsContainer.append(makeElement("div", "empty-state",
+          error instanceof Error ? `記録を読み込めませんでした：${error.message}` : "記録を読み込めませんでした。"));
+      }
+    }
+
+    function downloadCsv(records) {
+      const headers = ["点検日時", "車両番号", "運転者", "点検分類", "点検項目", "判定", "コメント", "写真"];
+      const rows = [headers, ...records.flatMap((record) => record.items.map((item) => [
+        formatDate(record.date),
+        record.vehicle,
+        record.driver,
+        item.group,
+        item.name,
+        item.result === "yes" ? "異常なし" : "異常あり",
+        item.comment || "",
+        item.photo ? "登録あり（端末内）" : ""
+      ]))];
+      const csv = `\uFEFF${rows.map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(",")).join("\r\n")}`;
+      const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `点検記録_${new Date().toLocaleDateString("sv-SE")}.csv`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    document.querySelectorAll('[role="tab"]').forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const showAdmin = tab.id === "admin-tab";
+        document.querySelector("#driver-tab").setAttribute("aria-selected", String(!showAdmin));
+        document.querySelector("#admin-tab").setAttribute("aria-selected", String(showAdmin));
+        document.querySelector("#driver-panel").hidden = showAdmin;
+        document.querySelector("#admin-panel").hidden = !showAdmin;
+        if (showAdmin) renderAdmin();
+      });
+    });
+
+    document.querySelector("#record-filter").addEventListener("change", renderAdmin);
+
+    const csvButton = makeElement("button", "button button--small", "CSVをダウンロード");
+    csvButton.type = "button";
+    csvButton.addEventListener("click", async () => {
+      try {
+        const records = await getAllRecords();
+        if (!records.length) {
+          document.querySelector("#admin-message").textContent = "出力する点検記録がありません。";
+          return;
+        }
+        downloadCsv(records);
+        document.querySelector("#admin-message").textContent = "CSVをダウンロードしました。";
+      } catch (error) {
+        document.querySelector("#admin-message").textContent = error instanceof Error ? error.message : "CSVを作成できませんでした。";
+      }
+    });
+    document.querySelector(".admin-tools").append(csvButton);
+
+    const totalItems = inspectionGroups.reduce((sum, group) => sum + group.items.length, 0);
+    renderInspectionForm();
+    document.querySelector("#inspection-date").value = toLocalDateTime(new Date());
+    progress.textContent = `0 / ${totalItems} 項目を確認`;
+  </script>
+</body>
+</html>
